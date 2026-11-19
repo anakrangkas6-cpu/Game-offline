@@ -12,6 +12,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true # Ubah ke false jika repo tidak menggunakan Git LFS
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library # Jika pakai subfolder, ubah jadi NamaFolder/Library
+          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Android-
 
       - name: Build Unity Android APK
         uses: game-ci/unity-builder@v4
@@ -21,11 +32,11 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: Android
+          unityVersion: auto
+          # projectPath: NamaFolderProject # <-- Hapus tanda '#' di depan dan isi jika folder Assets/ProjectSettings ada di dalam subfolder
           buildName: BellaVirtualLife
           buildsPath: build
           androidExportType: androidPackage
-          androidArchitecture: ARM64
-          androidAppBundle: false
           allowDirtyBuild: true
 
       - name: Upload APK
