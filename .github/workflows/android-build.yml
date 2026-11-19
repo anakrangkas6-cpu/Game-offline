@@ -1,33 +1,18 @@
-name: Build Unity Android APK
+name: Bella Virtual Life Android APK
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
-  workflow_dispatch: # Agar bisa dijalankan manual lewat tombol "Run workflow"
+    branches: [ main, master ]
 
 jobs:
-  buildForAndroid:
-    name: Build Unity Android APK
+  build:
+    name: Build Android ARM64 APK
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Mengambil source code dari repository
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true # Ubah ke false jika tidak memakai Git LFS
 
-      # 2. Cache folder Library agar build selanjutnya lebih cepat
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-Android-
-
-      # 3. Proses Build APK
       - name: Build Unity Android APK
         uses: game-ci/unity-builder@v4
         env:
@@ -36,14 +21,16 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: Android
-          unityVersion: auto # Otomatis membaca versi dari ProjectSettings/ProjectVersion.txt
-          projectPath: .     # Ganti dengan nama folder jika project Unity tidak di root repo
           buildName: BellaVirtualLife
-          androidExportType: androidPackage # Menghasilkan .apk (gunakan androidAppBundle untuk .aab)
+          buildsPath: build
+          androidExportType: androidPackage
+          androidArchitecture: ARM64
+          androidAppBundle: false
+          allowDirtyBuild: true
 
-      # 4. Upload file APK hasil build agar bisa diunduh
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Android-APK
+          name: BellaVirtualLife-Android
           path: build/Android/*.apk
+          if-no-files-found: error
